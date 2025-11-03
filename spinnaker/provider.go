@@ -1,12 +1,10 @@
 package spinnaker
 
 import (
-	"log"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/spf13/pflag"
 	gate "github.com/spinnaker/spin/cmd/gateclient"
 	output "github.com/spinnaker/spin/cmd/output"
 )

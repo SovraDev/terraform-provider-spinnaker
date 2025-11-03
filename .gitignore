@@ -1,0 +1,9 @@
+.terraform
+*.tfstate*
+terraform-provider-spinnaker
+*.tf
+*.log
+pipelines
+vendor/*
+/dist/
+*.key

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/tidal-engineering/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/SovraDev/terraform-provider-spinnaker/spinnaker/api"
 )
 
 func resourcePipeline() *schema.Resource {

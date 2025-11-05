@@ -6,8 +6,9 @@ page_title: "spinnaker_pipeline_config"
 
 Manage spinnaker pipeline configuration
 
-> [! Note]
+> [!> [!WARNING]
 > As of this version, only the `webhook` trigger type is supported.
+> ]
 
 
 ## Example Usage

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccSpinnakerApplication_basic(t *testing.T) {
@@ -69,7 +69,7 @@ func testAccCheckApplicationExists(n string) resource.TestCheckFunc {
 		err := resource.Retry(1*time.Minute, func() *resource.RetryError {
 			_, resp, err := client.ApplicationControllerApi.GetApplicationUsingGET(client.Context, rs.Primary.ID, nil)
 			if resp != nil {
-				if resp != nil && resp.StatusCode == http.StatusNotFound {
+				if resp.StatusCode == http.StatusNotFound {
 					return resource.RetryableError(fmt.Errorf("application does not exit"))
 				} else if resp.StatusCode != http.StatusOK {
 					return resource.NonRetryableError(fmt.Errorf("encountered an error getting application, status code: %d", resp.StatusCode))

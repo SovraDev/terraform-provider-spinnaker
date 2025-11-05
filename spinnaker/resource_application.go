@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/SovraDev/terraform-provider-spinnaker/spinnaker/api"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceApplication() *schema.Resource {
@@ -50,7 +50,7 @@ type applicationRead struct {
 	} `json:"attributes"`
 }
 
-func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) error {
+func resourceApplicationCreate(data *schema.ResourceData, meta any) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	application := data.Get("application").(string)
@@ -66,7 +66,7 @@ func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) erro
 	return resourceApplicationRead(data, meta)
 }
 
-func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error {
+func resourceApplicationRead(data *schema.ResourceData, meta any) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
@@ -78,11 +78,11 @@ func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error 
 	return readApplication(data, app)
 }
 
-func resourceApplicationUpdate(data *schema.ResourceData, meta interface{}) error {
+func resourceApplicationUpdate(data *schema.ResourceData, meta any) error {
 	return nil
 }
 
-func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) error {
+func resourceApplicationDelete(data *schema.ResourceData, meta any) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
@@ -90,7 +90,7 @@ func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) erro
 	return api.DeleteAppliation(client, applicationName)
 }
 
-func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceApplicationExists(data *schema.ResourceData, meta any) (bool, error) {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)

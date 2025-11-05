@@ -6,8 +6,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/SovraDev/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourcePipeline() *schema.Resource {
@@ -48,14 +48,14 @@ type pipelineRead struct {
 	ID          string `json:"id"`
 }
 
-func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
+func resourcePipelineCreate(data *schema.ResourceData, meta any) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
 	pipelineName := data.Get("name").(string)
 	pipeline := data.Get("pipeline").(string)
 
-	var tmp map[string]interface{}
+	var tmp map[string]any
 	if err := json.NewDecoder(strings.NewReader(pipeline)).Decode(&tmp); err != nil {
 		return err
 	}
@@ -64,6 +64,9 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 	tmp["name"] = pipelineName
 	delete(tmp, "id")
 
+	// Triggers are managed via the "spinnaker_pipeline_trigger" resource
+	delete(tmp, "triggers")
+
 	if err := api.CreatePipeline(client, tmp); err != nil {
 		return err
 	}
@@ -71,7 +74,7 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 	return resourcePipelineRead(data, meta)
 }
 
-func resourcePipelineRead(data *schema.ResourceData, meta interface{}) error {
+func resourcePipelineRead(data *schema.ResourceData, meta any) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
@@ -84,6 +87,9 @@ func resourcePipelineRead(data *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	// Remove triggers from the pipeline JSON since they are managed separately
+	jsonMap["triggers"] = []any{}
 
 	pipeline, err := editAndEncodePipeline(jsonMap)
 	if err != nil {
@@ -103,7 +109,7 @@ func resourcePipelineRead(data *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
+func resourcePipelineUpdate(data *schema.ResourceData, meta any) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
@@ -115,8 +121,16 @@ func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("No pipeline_id found to pipeline in %s with name %s", applicationName, pipelineName)
 	}
 
-	var pipe map[string]interface{}
-	err := json.Unmarshal([]byte(pipeline), &pipe)
+	var p pipelineRead
+	log.Println("[DEBUG] Making request to spinnaker")
+	log.Printf("Reading pipeline %s from application %s\n", pipelineName, applicationName)
+	jsonMap, err := api.GetPipeline(client, applicationName, pipelineName, &p)
+	if err != nil {
+		return err
+	}
+
+	var pipe map[string]any
+	err = json.Unmarshal([]byte(pipeline), &pipe)
 	if err != nil {
 		return fmt.Errorf("could not unmarshal pipeline")
 	}
@@ -124,6 +138,8 @@ func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
 	pipe["application"] = applicationName
 	pipe["name"] = pipelineName
 	pipe["id"] = pipelineID.(string)
+	// Triggers are managed via the "spinnaker_pipeline_trigger" resource
+	pipe["triggers"] = jsonMap["triggers"]
 
 	if err := api.UpdatePipeline(client, pipelineID.(string), pipe); err != nil {
 		return err
@@ -131,7 +147,7 @@ func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
 	return resourcePipelineRead(data, meta)
 }
 
-func resourcePipelineDelete(data *schema.ResourceData, meta interface{}) error {
+func resourcePipelineDelete(data *schema.ResourceData, meta any) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
@@ -144,7 +160,7 @@ func resourcePipelineDelete(data *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourcePipelineExists(data *schema.ResourceData, meta interface{}) (bool, error) {
+func resourcePipelineExists(data *schema.ResourceData, meta any) (bool, error) {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
@@ -183,18 +199,18 @@ func decodeEditAndEncodePipeline(pipeline string) (encodedPipeline string, err e
 
 	// Decode the pipeline into a map we can edit
 	pipelineBytes := []byte(pipeline)
-	var pipelineMapGeneric interface{}
+	var pipelineMapGeneric any
 	err = json.Unmarshal(pipelineBytes, &pipelineMapGeneric)
 	if err != nil {
 		return
 	}
 
-	pipelineMap := pipelineMapGeneric.(map[string]interface{})
+	pipelineMap := pipelineMapGeneric.(map[string]any)
 
 	return editAndEncodePipeline(pipelineMap)
 }
 
-func editAndEncodePipeline(pipelineMap map[string]interface{}) (encodedPipeline string, err error) {
+func editAndEncodePipeline(pipelineMap map[string]any) (encodedPipeline string, err error) {
 	// Remove the keys we know are problematic because they are managed
 	// by spinnaker or are handled by other schema attributes.
 	delete(pipelineMap, "application")

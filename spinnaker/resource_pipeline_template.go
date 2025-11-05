@@ -9,7 +9,7 @@ import (
 
 	"github.com/SovraDev/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/ghodss/yaml"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourcePipelineTemplate() *schema.Resource {

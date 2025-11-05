@@ -12,3 +12,22 @@ func validateApplicationName(v interface{}, k string) (ws []string, errors []err
 	}
 	return
 }
+
+func validatePipelineTriggerType(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+	validTypes := []string{
+		"webhook",
+	}
+	isValid := false
+	for _, t := range validTypes {
+		if value == t {
+			isValid = true
+			break
+		}
+	}
+	if !isValid {
+		errors = append(errors, fmt.Errorf("Invalid value for %q: %q. Valid values are: %v", k, value, validTypes))
+	}
+	return
+}
+

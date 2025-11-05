@@ -3,13 +3,12 @@ package spinnaker
 import (
 	"os"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	gate "github.com/spinnaker/spin/cmd/gateclient"
 	output "github.com/spinnaker/spin/cmd/output"
 )
 
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"server": {
@@ -40,6 +39,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"spinnaker_application":              resourceApplication(),
 			"spinnaker_pipeline":                 resourcePipeline(),
+			"spinnaker_pipeline_config":          resourcePipelineConfig(),
 			"spinnaker_pipeline_template":        resourcePipelineTemplate(),
 			"spinnaker_pipeline_template_config": resourcePipelineTemplateConfig(),
 		},
